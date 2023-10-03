@@ -1,7 +1,7 @@
 import './App.css'
 import Navbar from './components/Navbar'
 import Greeting from './components/Greeting'
-import Post from './components/post'
+import Post from './components/Post'
 import { PostDTO } from './components/types/dto'
 
 const posts: PostDTO[] = [
