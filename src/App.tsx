@@ -1,40 +1,56 @@
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import './App.css'
 import Navbar from './components/Navbar'
 import Greeting from './components/Greeting'
 import Post from './components/Post'
-import { PostDTO } from './components/types/dto'
-
-const initialPosts: PostDTO[] = [
-  {
-    id: 1,
-    userId: 1,
-    title: "Let's learn React!",
-    body: 'quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto',
-  },
-  {
-    id: 2,
-    userId: 2,
-    title: 'How to install Node.js',
-    body: 'quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto',
-  },
-  {
-    id: 3,
-    userId: 3,
-    title: 'Basic HTML',
-    body: 'quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto',
-  },
-]
+import { CreatePostDTO, PostDTO } from './components/types/dto'
+import axios from 'axios'
 
 function App() {
-  const [posts, setPosts] = useState<PostDTO[]>(initialPosts)
+  const [posts, setPosts] = useState<PostDTO[] | null>(null)
   const [newTitle, setNewTitle] = useState<string>('')
   const [newBody, setNewBody] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isPending, setIsPending] = useState<boolean>(false)
 
-  const handleSubmit = (e: FormEvent) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+      try {
+        const res = await axios.get<PostDTO[]>('https://jsonplaceholder.typicode.com/posts')
+
+        setPosts(res.data)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
-    const currentPosts = [...posts]
+    setIsPending(true)
+
+    if (!posts) return
+
+    const newPost: CreatePostDTO = { title: newTitle, body: newBody, userId: Math.floor(Math.random() * 1000) }
+
+    try {
+      const res = await axios.post('https://jsonplaceholder.typicode.com/posts', newPost, {
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+      })
+      console.log(res.data)
+    } catch (err) {
+      console.error(err)
+    }
+    setIsPending(false)
+
+    /*     const currentPosts = [...posts]
 
     currentPosts.push({
       id: Math.floor(Math.random() * 1000),
@@ -43,11 +59,13 @@ function App() {
       body: newBody,
     })
 
-    setPosts(currentPosts)
+    setPosts(currentPosts) */
 
     setNewTitle('')
     setNewBody('')
   }
+
+  if (isLoading) return <h1>Loading...</h1>
 
   return (
     <div className="App">
@@ -58,13 +76,15 @@ function App() {
         <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
         <label>Body</label>
         <input type="text" value={newBody} onChange={(e) => setNewBody(e.target.value)} required />
-
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={isPending}>
+          {isPending ? 'Pending...' : 'Submit'}
+        </button>
       </form>
       <div className="feed-container">
-        {posts.map((post) => {
-          return <Post key={post.id} post={post} />
-        })}
+        {posts &&
+          posts.map((post) => {
+            return <Post key={post.id} post={post} />
+          })}
       </div>
     </div>
   )
