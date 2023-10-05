@@ -12,9 +12,30 @@
   box-shadow: 0 0 10px 5px rgb(0 0 0 / 0.1);
 }
 
+.menu {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.inactive {
+  text-decoration: none;
+}
+
+.active {
+  color: blue;
+  font-weight: bold;
+  text-decoration: none;
+}
+
 .loginButton {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
     'Droid Sans', 'Helvetica Neue', sans-serif;
   width: 55px;
   height: 30px;
+}
+
+.loginButton:hover {
+  background-color: lightgray;
+  cursor: pointer;
 }
